@@ -8,17 +8,17 @@
 import SwiftUI
 
 enum Currency: Double, CaseIterable, Identifiable {
-    case copperPenny = 6400
-    case silverPenny = 64
+    case copperPenny = 1
+    case silverPenny = 4
     case silverPiece = 16
-    case goldPenny = 4
-    case goldPiece = 1
+    case goldPenny = 64
+    case goldPiece = 6400
     
     var id: Currency {  self  }
     
     var image: ImageResource {
         switch self {
-        case .copperPenny:
+            case .copperPenny:
                 return .copperpenny
             case .silverPenny:
                 return .silverpenny
@@ -26,7 +26,7 @@ enum Currency: Double, CaseIterable, Identifiable {
                 return .silverpiece
             case .goldPenny:
                 return .goldpenny
-        case .goldPiece:
+            case .goldPiece:
                 return .goldpiece
         }
     }
@@ -50,7 +50,7 @@ enum Currency: Double, CaseIterable, Identifiable {
         }
     }
     
-    func convert(amountString: String, currency: Currency)-> String{
+    func convert(_ amountString: String,to currency: Currency)-> String{
         guard let doubleAmount = Double(amountString) else {
             return ""
         }

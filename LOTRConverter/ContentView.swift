@@ -6,7 +6,7 @@
 //
 
 
-
+// For copying a file (option + Drag with mouse) of the file to be replicated
 
 // Z stack - on top
 // H stack - you know this
@@ -27,8 +27,16 @@
 // Always toggle and see how the theme is working for the dark theme in the application and if you want it to be uniform, click on the v-stack or z-stack, the topmost starting one on the code and add modifier to it- to add the foreground color to be black
  // Binding - A property wrapper type that can read and write a value owned by a source of truth
 // Guard - is the exception handling in iOS
+// Function argument label names and parameter names - the parameter names are the default function argument labels, else we can explicitely define the labels for the parameters
+// FocusState - to let us know on where in our app or where in our screen we are currently focused
+// The sheet is not connected to the button itself, but it listens to the showExchange info listener and as the value change the sheet comes up
+// Similar to the sheet - the on changed modifier also doesn't necessarily listens to the typing field to listen, we can have it at the bottom with the sheet modifier too, but I like it the way it is organized to the button
+// to use the inbuild swift sf icons - use the systemName. as a prefix and get going
+// The task modifier allows the code to run in the background when the screen appears
+// bigmountainstudio.com - has good notes and books on swift
 
 import SwiftUI
+import TipKit
 
 struct ContentView: View {
     @State var showExchangeInfo = false
@@ -38,8 +46,13 @@ struct ContentView: View {
     @State var leftAmount = ""
     @State var rightAmount = ""
     
+    @FocusState var leftTyping
+    @FocusState var rightTyping
+    
     @State var leftCurrency = Currency.silverPiece
     @State var rightCurrency: Currency = .goldPiece
+    
+    let currencyTip = CurrencyTip()
     
     var body: some View {
         ZStack{
@@ -72,6 +85,10 @@ struct ContentView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(height: 33)
+                                .onChange(of: leftCurrency) {
+                                    leftAmount =
+                                    rightCurrency.convert(rightAmount, to: leftCurrency)
+                                }
                             
                             // Currency text
                             Text(leftCurrency.name)
@@ -81,12 +98,21 @@ struct ContentView: View {
                         .padding(.bottom, -5)
                         .onTapGesture {
                             showSelectedCurrency.toggle()
+                            currencyTip.invalidate(reason:
+                                    .actionPerformed)
                         }
+                        .popoverTip(currencyTip, arrowEdge: .bottom)
                         
                         //Text field
                         TextField("Amount",
                                   text: $leftAmount)
                         .textFieldStyle(.roundedBorder)
+                        .focused($leftTyping)
+                        .onChange(of: leftAmount) {
+                            if leftTyping == true {
+                                rightAmount = leftCurrency.convert(leftAmount, to: rightCurrency)
+                            }
+                        }
                     }
                     
                     // Equal sign
@@ -105,6 +131,9 @@ struct ContentView: View {
                             Text(rightCurrency.name)
                                 .font(.headline)
                                 .foregroundStyle(.white)
+                                .onChange(of: rightCurrency) {
+                                    rightAmount = leftCurrency.convert(leftAmount, to: rightCurrency)
+                                }
                             
                             // Currency image
                             Image(rightCurrency.image)
@@ -115,17 +144,27 @@ struct ContentView: View {
                         .padding(.bottom, -5)
                         .onTapGesture {
                             showSelectedCurrency.toggle()
+                            currencyTip.invalidate(reason:
+                                    .actionPerformed)
                         }
                         
                         //Text field
                         TextField("Amount", text: $rightAmount)
                             .textFieldStyle(.roundedBorder)
+                            .focused($rightTyping)   // Only do the conversion if right typing is true
                             .multilineTextAlignment(.trailing)
+                            .onChange(of: rightAmount) {
+                                if rightTyping == true {
+                                    leftAmount =
+                                    rightCurrency.convert(rightAmount, to: leftCurrency)
+                                }
+                            }
                     }
                 }
                 .padding()
                 .background(.black.opacity(0.5))
                 .clipShape(.capsule)
+                .keyboardType(.decimalPad)
                 
                 Spacer()
                 
@@ -145,6 +184,9 @@ struct ContentView: View {
                 .padding(.bottom,-5)
                 
             }
+        }
+        .task {
+            try? Tips.configure()
         }
         .sheet(isPresented: $showExchangeInfo){
                 ExchangeInfo()
