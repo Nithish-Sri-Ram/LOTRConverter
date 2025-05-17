@@ -15,11 +15,6 @@ struct CurrencyIcon: View {
     var body: some View {
         
         VStack{
-            // Text
-            Text("Select the Currency you are starting with:")
-                .fontWeight(.bold)
-            
-            
             // Currency Icons
             ZStack(alignment: .bottom){
                 // Currency Image
